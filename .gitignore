@@ -102,3 +102,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Dev. mode configuration
+dev_data.conf
+env_data.conf
+tests/functional_tests/dev_data.conf
+tests/unit_tests/dev_data.conf
+tests/unit_tests/default_configuration/dev_data.conf
+results
+input_files
+
+# Exclude all Pycharm files
+.idea
