@@ -653,7 +653,7 @@ class ApicError(Exception):
     pass
 
 
-if __name__ == "__main__":
+def main():
     app_path = sys.path[0]
 
     commandline_args = arg_parser.parse_args()
@@ -666,3 +666,7 @@ if __name__ == "__main__":
 
     exit_code = execute_command(app_path, commandline_args)
     exit(exit_code)
+
+
+if __name__ == "__main__":
+    main()
