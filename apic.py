@@ -175,13 +175,13 @@ def get_app_config_file_path():
     app_config_dir = get_app_config_dir()
     default_config_dir = 'default_configuration'
 
-    result = affirm_config_file('application.conf', app_config_dir, default_config_dir)
+    result = affirm_app_config_file(app_config_dir)
 
     global_env = os.environ.get('GLOBAL_ENV')
     if global_env and global_env == 'local_dev':
         affirm_config_file('dev_data.conf', app_config_dir, default_config_dir, 'env_data.conf')
     else:
-        affirm_config_file('prd_data.conf', app_config_dir, default_config_dir, 'env_data.conf')
+        affirm_prd_data_conf_file(app_config_dir)
 
     return result
 
@@ -203,6 +203,43 @@ def affirm_config_file(file_name, app_config_dir, default_config_dir, destinatio
     if not os.path.isfile(result):
         default_file_path = os.path.join(default_config_dir, file_name)
         shutil.copy(default_file_path, result)
+
+    return result
+
+
+def affirm_app_config_file(app_config_dir):
+    result = os.path.join(app_config_dir, 'application.conf')
+    if not os.path.isfile(result):
+        with open(result, 'w+') as app_conf_file:
+            app_conf_file.writelines([
+                '# Include file with substitutes for production environment\n',
+                'include "env_data.conf"\n',
+                '\n',
+                'sso_service_base_url = ${SSO_SERVICE_BASE_URL}\n',
+                'data_api_base_url = ${DATA_API_BASE_URL}\n',
+                'impairment_studio_api_base_url = ${IMPAIRMENT_STUDIO_API_BASE_URL}\n',
+                '\n',
+                'default_job_wait_timeout_in_minutes = ${DEFAULT_JOB_WAIT_TIMEOUT_IN_MINUTES}\n',
+                '\n',
+                'http_proxy = ${HTTP_PROXY}\n',
+                'https_proxy = ${HTTPS_PROXY}\n',
+            ])
+
+    return result
+
+
+def affirm_prd_data_conf_file(app_config_dir):
+    result = os.path.join(app_config_dir, 'env_data.conf')
+    if not os.path.isfile(result):
+        with open(result, 'w+') as app_conf_file:
+            app_conf_file.writelines([
+                'SSO_SERVICE_BASE_URL=https://sso.moodysanalytics.com\n',
+                'DATA_API_BASE_URL=https://api.impairmentstudio.moodysanalytics.com\n',
+                'IMPAIRMENT_STUDIO_API_BASE_URL=https://api.impairmentstudio.moodysanalytics.com\n',
+                'DEFAULT_JOB_WAIT_TIMEOUT_IN_MINUTES=1440\n',
+                'HTTP_PROXY=null\n',
+                'HTTPS_PROXY=null\n',
+            ])
 
     return result
 
