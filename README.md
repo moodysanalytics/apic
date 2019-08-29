@@ -5,7 +5,7 @@ Current version supports API to ImpairmentStudio™.
 ## Configuring CLI
 To configure CLI with what is required to call the APIs, use the **configure** command.
 ```
-$ apic configure
+$ python apic.pyz configure
 User login: USERLOGIN
 Password: USERPASSWORD
 ```
@@ -52,17 +52,13 @@ Help is presented with any command when using the CLI. To do so, simply use **he
 
 For example, the following command displays help for the general CLI options and the available top-level commands.
 ```
-$ apic help
-```
-
 The following command displays the available ImpairmentStudio commands.
-```
-$ apic is help
+$ python apic.pyz help
 ```
 
 The following example displays detailed help for ImpairmentStudio import operation.
 ```
-$ apic is import help
+$ python apic.pyz import help
 ```
 
 ### Common Options
