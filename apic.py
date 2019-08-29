@@ -119,7 +119,7 @@ def resolve_common_option_executor(args):
 
 
 def resolve_is_command_executor(args):
-    is_command_name == get_arg(args, 'is_command_name')
+    is_command_name = get_arg(args, 'is_command_name')
     if not is_command_name:
         return None
 
@@ -543,10 +543,10 @@ def add_global_options_to_arg_parser(arguments_parser):
         '--password',
         metavar='<user password>',
         help='Specifies the user password to overwrite the environment variable and configuration file')
-    arguments_parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='A switch that enables debug logging')
+    # arguments_parser.add_argument(
+    #     '--debug',
+    #     action='store_true',
+    #     help='A switch that enables debug logging')
 
 
 # Define top-level command arguments parser and options
