@@ -543,10 +543,10 @@ def add_global_options_to_arg_parser(arguments_parser):
         '--password',
         metavar='<user password>',
         help='Specifies the user password to overwrite the environment variable and configuration file')
-    arguments_parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='A switch that enables debug logging')
+    # arguments_parser.add_argument(
+    #     '--debug',
+    #     action='store_true',
+    #     help='A switch that enables debug logging')
 
 
 # Define top-level command arguments parser and options
