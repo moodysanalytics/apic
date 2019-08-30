@@ -55,7 +55,7 @@ For example, the following command displays help for the general CLI options and
 $ python apic.pyz help
 ```
 
-The following example displays detailed help for ImpairmentStudio import operation.
+The following example displays detailed help for ImpairmentStudio™ import operation.
 ```
 $ python apic.pyz import help
 ```
@@ -68,3 +68,93 @@ The following command line options can be used to override the configuration set
 - **--password**: Specifies the user password to overwrite the environment variable and configuration file.
 - **--test-connect**: Test connections to the API servers. Test will be performed on APIs that support ping endpoint.
 - **--version**: Displays the version of CLI that's currently used.
+
+
+## ImpairmentStudio™ CLI Commands
+### Import Data
+Imports a zip file containing the data files for ImpairmentStudio™ input.
+
+```
+python apic.pyz import
+  --input-zip <path to source zip import file>
+  [--output-path <path to place output files>]
+  [--job-name <import job name>]
+  [--overwrite]
+Options
+--input-zip (string)
+```
+The local path to the input zip file to be imported.
+
+Example: ```/my-data/in/portfolio_201908.zip```
+
+```--output-path (string)```
+
+The local path to the where output files will be copied to. The output files for import contains the zip of error messages from the validation process. The name of the zip file will be the same as the name of the input file with _out suffix. If a file with the same name existed, it will be overwritten.
+
+
+
+Default value: When not specified, this will default to the same directory as the input file. In the example where the input file is /my-data/in/portfolio_201908.zip, the output file will be placed at /my-data/in/portfolio_201908_out.zip
+
+Example: ```/my-data/out will create file /my-data/out/portfolio_201908_out.zip```
+
+```--job-name (string)```
+
+The name of the job to help it get identified in the application.
+
+Default value When not specified, The job name will be the name of the input zip file without zip file extension. When input file is /my-data/in/portfolio_201908.zip, the job name will be portfolio_201908.
+
+```--overwrite```
+
+Specifies whether to overwrite portfolio of the same name or not.
+
+Default value: When not is specified, and the same portfolio name and as of date existed, error will be returned
+
+### Run Analysis
+Runs an ImpairmentStudio™ analysis.
+
+If analysis id does not exist, error message will be returned.
+
+```
+python apic.pyz run-analysis
+  --analysis-id <analysis id>
+  [--output-path <<path to place output files>]
+  [--no-wait]
+Options
+  --analysis-id (number)
+```
+The unique identifier of an analysis that is in ImpairmentStudio™. This identifier can be retrieved from ImpairmentStudio™ application.
+
+```--output-path (string)```
+
+The local path to the where output files will be downloaded to after analysis is completed either with error or successfully. The output file for analysis contains a zip of results and error messages from the analysis process. The name of the zip file will follow the following format: analysis_<analysis-id>_out.zip. If a file with the same name existed, it will be overwritten.
+
+If no output path is specified, then the output file will not be downloaded after analysis is completed.
+
+Example: ```/my-analysis/res for analysis id 256 will create file /my-analysis/res/analysis_256_out.zip```
+
+```--no-wait```
+
+Do not wait for job completion. This results in the call to return immediately after the job is submitted. It will be ignored if --output-path is specified and the command will wait for completion.
+
+Default value: If not specified, wait and monitor for completion.
+
+Download Analysis Output
+Downloads the output of an analysis that has been executed. This downloads the same zip file as when specified in the run-analysis command.
+
+If analysis id does not exist, or the analysis has never been run, error message will be returned.
+```
+python apic.pyz download-analysis-output
+  --analysis-id <analysis id>
+  [--output-path <<path to place output files>]
+Options
+  --analysis-id (number)
+```
+The unique identifier of an analysis that is in ImpairmentStudio™. This identifier can be retrieved from ImpairmentStudio™ application.
+
+```--output-path (string)```
+
+The local path to the where output files will be downloaded to after analysis is completed either with error or successfully. The output file for analysis contains a zip of results and error messages from the analysis process. The name of the zip file will follow the following format: analysis_<analysis-id>_out.zip. If a file with the same name existed, it will be overwritten.
+
+If no output path is specified, then the output file will not be downloaded after analysis is completed.
+
+Example: ```/my-analysis/res for analysis id 256 will create file /my-analysis/res/analysis_256_out.zip```
