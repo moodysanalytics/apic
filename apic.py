@@ -4,6 +4,7 @@ import shutil
 import logging
 import time
 import contextlib
+import json
 from argparse import ArgumentParser
 from pyhocon import ConfigFactory
 from pyhocon import ConfigMissingException
@@ -335,7 +336,7 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
 def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
     # Get/resolve arguments
     arg_analysis_id = args.analysis_id
-    arg_error_files_dir = get_arg(args, 'output_path', default=current_dir)
+    arg_output_dir = get_arg(args, 'output_path', default=current_dir)
     arg_no_wait = get_arg(args, 'no_wait', default=False)
 
     # Get configuration parameters
@@ -355,6 +356,19 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         analysis_job_id = ps_client.run_analysis(arg_analysis_id)
         logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has started.")
 
+        # Save run analysis info to the file
+        run_analysis_info = {
+            "analysisId": arg_analysis_id,
+            "analysisJobId": analysis_job_id
+        }
+        run_analysis_info_file_path = os.path.join(arg_output_dir, f"run_analysis_info_{arg_analysis_id}_{analysis_job_id}.json")
+        with open(run_analysis_info_file_path, 'w') as run_analysis_info_file:
+            json.dump(run_analysis_info, run_analysis_info_file, indent=4)
+
+        last_run_analysis_info_file_path = os.path.join(arg_output_dir, "last_run_analysis_info.json")
+        with open(last_run_analysis_info_file_path, 'w') as last_run_analysis_info_file:
+            json.dump(run_analysis_info, last_run_analysis_info_file, indent=4)
+
         if arg_no_wait:
             return
 
@@ -364,7 +378,7 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
             analysis_job_id,
             default_job_wait_timeout)
         # Step 3.1: Validate job status. If job failed, stop processing and log error.
-        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_error_files_dir)
+        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_output_dir)
         logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has finished. ")
 
 
