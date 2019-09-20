@@ -52,6 +52,7 @@ Help is presented with any command when using the CLI. To do so, simply use **he
 
 For example, the following command displays help for the general CLI options and the available top-level commands.
 ```
+The following command displays the available ImpairmentStudio commands.
 $ python apic.pyz help
 ```
 
