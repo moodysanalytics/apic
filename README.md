@@ -5,7 +5,7 @@ Current version supports API to ImpairmentStudio™.
 ## Configuring CLI
 To configure CLI with what is required to call the APIs, use the **configure** command.
 ```
-$ python apic.pyz configure
+$ python apic configure
 User login: USERLOGIN
 Password: USERPASSWORD
 ```
@@ -53,12 +53,12 @@ Help is presented with any command when using the CLI. To do so, simply use **he
 For example, the following command displays help for the general CLI options and the available top-level commands.
 ```
 The following command displays the available ImpairmentStudio commands.
-$ python apic.pyz help
+$ python apic help
 ```
 
 The following example displays detailed help for ImpairmentStudio™ import operation.
 ```
-$ python apic.pyz import help
+$ python apic import help
 ```
 
 ### Common Options
@@ -76,7 +76,7 @@ The following command line options can be used to override the configuration set
 Imports a zip file containing the data files for ImpairmentStudio™ input.
 
 ```
-python apic.pyz import
+python apic import
   --input-zip <path to source zip import file>
   [--output-path <path to place output files>]
   [--job-name <import job name>]
@@ -116,7 +116,7 @@ Runs an ImpairmentStudio™ analysis.
 If analysis id does not exist, error message will be returned.
 
 ```
-python apic.pyz run-analysis
+python apic run-analysis
   --analysis-id <analysis id>
   [--output-path <<path to place output files>]
   [--no-wait]
@@ -139,12 +139,12 @@ Do not wait for job completion. This results in the call to return immediately a
 
 Default value: If not specified, wait and monitor for completion.
 
-Download Analysis Output
+### Download Analysis Output
 Downloads the output of an analysis that has been executed. This downloads the same zip file as when specified in the run-analysis command.
 
 If analysis id does not exist, or the analysis has never been run, error message will be returned.
 ```
-python apic.pyz download-analysis-output
+python apic download-analysis-output
   --analysis-id <analysis id>
   [--output-path <<path to place output files>]
 Options
