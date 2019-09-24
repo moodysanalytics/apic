@@ -587,7 +587,7 @@ def add_global_options_to_arg_parser(arguments_parser):
 
 
 # Define top-level command arguments parser and options
-arg_parser = ArgumentParser('apic')
+arg_parser = ArgumentParser('apic is')
 arg_parser.add_argument(
     '--test-connect',
     action='store_true',
@@ -693,7 +693,22 @@ class ApicError(Exception):
 def main():
     app_path = sys.path[0]
 
-    commandline_args = arg_parser.parse_args()
+    # Because of new API selector option the help should be enforced implicitly for this use case
+    if len(sys.argv) <= 1:
+        arg_parser.print_help()
+        exit(1)
+
+    # Check for API selector option 'is'
+    # Current implementation is supports just 'is' API (API to ImpairmentStudio)
+    api_selector_option = sys.argv[1]
+    if api_selector_option != 'is':
+        arg_parser.print_help()
+        exit(1)
+
+    # Get 'is' API options and parse them
+    is_args = sys.argv[2:]
+    commandline_args = arg_parser.parse_args(is_args)
+
     is_command_name = get_arg(commandline_args, 'is_command_name')
     cmn_opt_test_connect = get_arg(commandline_args, 'test_connect')
     cmn_opt_version = get_arg(commandline_args, 'version')
