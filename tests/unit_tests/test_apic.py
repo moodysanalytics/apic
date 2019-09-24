@@ -115,9 +115,9 @@ def test_get_credentials_config():
 def test_get_app_config():
     actual = apic.get_app_config()
 
-    assert actual['sso_service_base_url'] == 'https://qa-api.sso.moodysanalytics.net'
-    assert actual['data_api_base_url'] == 'https://qa-api.rafa.moodysanalytics.net'
-    assert actual['impairment_studio_api_base_url'] == 'https://qa-api.impairmentstudio.moodysanalytics.net'
+    assert actual['sso_service_base_url'] == 'https://sso.moodysanalytics.com'
+    assert actual['data_api_base_url'] == 'https://api.impairmentstudio.moodysanalytics.com'
+    assert actual['impairment_studio_api_base_url'] == 'https://api.impairmentstudio.moodysanalytics.com'
 
 
 def test_get_app_config_file_path():
@@ -150,7 +150,7 @@ def test_get_config_item():
     assert actual is None
 
     actual = apic.get_config_item(config, 'sso_service_base_url')
-    assert actual == 'https://qa-api.sso.moodysanalytics.net'
+    assert actual == 'https://sso.moodysanalytics.com'
 
 
 def test_get_arg():
