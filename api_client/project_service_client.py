@@ -1,6 +1,7 @@
 import requests
 import urllib.parse
 import logging
+import json
 from api_client.security import Session
 
 # Configure the logger
@@ -26,6 +27,17 @@ class ProjectServiceClient(object):
         job_info = response.json()
         result = job_info['jobId']
         return result
+    
+    def duplicate_analysis(self, analysis_id, payload):
+        url_path = f'/project/v1/analysis/{analysis_id}/duplicate'
+        url = urllib.parse.urljoin(self.service_base_url, url_path)
+
+        headers = self.session.get_auth_header()
+        headers["Content-Type"] = "application/json"
+        headers["Accept"] = "application/json"
+        response = requests.post(url, headers=headers, proxies=self.session.proxies, data=json.dumps(payload))
+        response.raise_for_status() 
+        return response.json()
 
     def ping(self):
         url_path = "/project/docs/"
