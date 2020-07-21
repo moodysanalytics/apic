@@ -65,22 +65,30 @@ class Session(object):
         self.revoke_auth_token()
 
     def request_new_auth_token(self):
-        url_path = '/sso-api/v1/token'
-        url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
+        if hasattr(self, 'user_id') and hasattr(self, 'user_password'):
+            url_path = '/sso-api/v1/token'
+            url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
+            request_new_auth_token_data = {
+                'username': self.user_id,
+                'password': self.user_password,
+                'grant_type': 'password',
+                'scope': 'openid'
+            }
+            response = requests.post(
+                url,
+                data=request_new_auth_token_data,
+                auth=(self.user_id, self.user_password),
+                proxies=self.proxies
+            )
+        else: 
+            url_path = '/sso-api/auth/renewtoken'
+            url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
+            response = requests.get(
+                url,
+                headers={'Authorization': f'Bearer {self.auth_token}'},
+                proxies=self.proxies
+            )
 
-        request_new_auth_token_data = {
-            'username': self.user_id,
-            'password': self.user_password,
-            'grant_type': 'password',
-            'scope': 'openid'
-        }
-
-        response = requests.post(
-            url,
-            data=request_new_auth_token_data,
-            auth=(self.user_id, self.user_password),
-            proxies=self.proxies
-        )
         response.raise_for_status()
 
         response_body_json = response.json()
