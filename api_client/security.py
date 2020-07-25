@@ -65,30 +65,22 @@ class Session(object):
         self.revoke_auth_token()
 
     def request_new_auth_token(self):
-        if hasattr(self, 'user_id') and hasattr(self, 'user_password'):
-            url_path = '/sso-api/v1/token'
-            url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
-            request_new_auth_token_data = {
-                'username': self.user_id,
-                'password': self.user_password,
-                'grant_type': 'password',
-                'scope': 'openid'
-            }
-            response = requests.post(
-                url,
-                data=request_new_auth_token_data,
-                auth=(self.user_id, self.user_password),
-                proxies=self.proxies
-            )
-        else: 
-            url_path = '/sso-api/auth/renewtoken'
-            url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
-            response = requests.get(
-                url,
-                headers={'Authorization': f'Bearer {self.auth_token}'},
-                proxies=self.proxies
-            )
+        url_path = '/sso-api/v1/token'
+        url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
 
+        request_new_auth_token_data = {
+            'username': self.user_id,
+            'password': self.user_password,
+            'grant_type': 'password',
+            'scope': 'openid'
+        }
+
+        response = requests.post(
+            url,
+            data=request_new_auth_token_data,
+            auth=(self.user_id, self.user_password),
+            proxies=self.proxies
+        )
         response.raise_for_status()
 
         response_body_json = response.json()
@@ -98,6 +90,30 @@ class Session(object):
                 f"Authorization token is empty. "
                 f"Authentication token has not been retrieved from "
                 f"SSO service '{self.sso_svcs_base_url} for user '{self.user_id}''.")
+
+        token_type = response_body_json.get('token_type')
+        if token_type != 'Bearer':
+            raise AuthenticationError(f"Wrong token type '{token_type}'. Expected token type is 'Bearer'.")
+
+        return result
+
+    def request_new_auth_token_no_creds(self):
+        url_path = '/sso-api/auth/renewtoken'
+        url = urllib.parse.urljoin(self.sso_svcs_base_url, url_path)
+        response = requests.get(
+            url,
+            headers={'Authorization': f'Bearer {self.auth_token}'},
+            proxies=self.proxies
+        )
+        response.raise_for_status()
+
+        response_body_json = response.json()
+        result = response_body_json.get('id_token')
+        if result is None or result == "":
+            raise AuthenticationError(
+                f"Authorization token is empty. "
+                f"Authentication token has not been retrieved from "
+                f"SSO service '{self.sso_svcs_base_url}{url_path}'.")
 
         token_type = response_body_json.get('token_type')
         if token_type != 'Bearer':
@@ -128,7 +144,10 @@ class Session(object):
         time.sleep(1)
 
         # Request a new token
-        result = self.request_new_auth_token()
+        if hasattr(self, 'user_id') and hasattr(self, 'user_password'):
+            result = self.request_new_auth_token()
+        else:
+            result = self.request_new_auth_token_no_creds()
         return result
 
     def update_auth_token_claimset_expiration_info(self):
