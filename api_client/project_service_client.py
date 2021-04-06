@@ -39,6 +39,13 @@ class ProjectServiceClient(object):
         response.raise_for_status() 
         return response.json()
 
+    def get_analysis_scenarios(self, analysis_id: int) -> list:
+        url_path = f'/project/1.0/analyses/{analysis_id}/scenarios'
+        url = urllib.parse.urljoin(self.service_base_url, url_path)
+        response = requests.get(url, headers=self.session.get_auth_header(), proxies=self.session.proxies)
+        response.raise_for_status() 
+        return response.json()
+
     def ping(self):
         url_path = "/project/docs/"
         url = urllib.parse.urljoin(self.service_base_url, url_path)
