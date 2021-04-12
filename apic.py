@@ -4,6 +4,7 @@ import shutil
 import logging
 import time
 import contextlib
+import json
 from argparse import ArgumentParser
 from pyhocon import ConfigFactory
 from pyhocon import ConfigMissingException
@@ -307,13 +308,13 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
         ds_client = DictionaryServiceClient(session, data_api_base_url)
         js_client = JobServiceClient(session, impairment_studio_api_base_url)
 
-        # Step 1: Upload ZIP file with inputs to the system's raw files location
+        # Upload ZIP file with inputs to the system's raw files location
         logging.info(f"Importing of the input file '{arg_input_zip_file_path}' to the system has started.")
         head, file_management_file_name = os.path.split(arg_input_zip_file_path)
         files_info = fms_client.import_file(arg_input_zip_file_path, file_management_file_name, 'raw')
         logging.info(f"Importing of the input file '{arg_input_zip_file_path}' to the system has finished.")
 
-        # Step 2.1: Schedule a job to move files from raw files location to processing location
+        # Schedule a job to move files from raw files location to processing location
         file_info = files_info[0]
         job_id = ds_client.import_file(
             file_management_file_id=file_info['id'],
@@ -323,9 +324,9 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
             f"Moving input file '{file_info['filename']}' from raw files location "
             f"to the processing location has started (job id: '{job_id}').")
 
-        # Step 2.2: Wait until file moving is done
+        # Wait until file moving is done
         job_final_status = job_wait(js_client, job_id, default_job_wait_timeout)
-        # Step 2.3: Validate job status. If job failed, stop processing and log error.
+        # Validate job status. If job failed, stop processing and log error.
         validate_job(job_id, job_final_status, fms_client, arg_error_files_dir)
         logging.info(
             f"Moving input file '{file_info['filename']}' from raw files location "
@@ -335,7 +336,7 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
 def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
     # Get/resolve arguments
     arg_analysis_id = args.analysis_id
-    arg_error_files_dir = get_arg(args, 'output_path', default=current_dir)
+    arg_output_dir = get_arg(args, 'output_path', default=current_dir)
     arg_no_wait = get_arg(args, 'no_wait', default=False)
 
     # Get configuration parameters
@@ -351,20 +352,37 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         js_client = JobServiceClient(session, impairment_studio_api_base_url)
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
-        # Step 3.1: Schedule calculation job
+        # Schedule calculation job
         analysis_job_id = ps_client.run_analysis(arg_analysis_id)
         logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has started.")
 
+        # Save run analysis info to the file
+        run_analysis_info = {
+            "analysisId": arg_analysis_id,
+            "analysisJobId": analysis_job_id
+        }
+
+        # Write run analysis info JSON file (for keeping records)
+        run_analysis_info_file_path = os.path.join(arg_output_dir, f"run_analysis_info_{arg_analysis_id}_{analysis_job_id}.json")
+        with open(run_analysis_info_file_path, 'w') as run_analysis_info_file:
+            json.dump(run_analysis_info, run_analysis_info_file, indent=4)
+
+        # Write run analysis info JSON file 'latest'
+        last_run_analysis_info_file_path = os.path.join(arg_output_dir, "last_run_analysis_info.json")
+        with open(last_run_analysis_info_file_path, 'w') as last_run_analysis_info_file:
+            json.dump(run_analysis_info, last_run_analysis_info_file, indent=4)
+
+        # Exit if no wait flag
         if arg_no_wait:
             return
 
-        # Step 3.2: Wait until calculation is done
+        # Wait until calculation is done
         analysis_job_final_status = job_wait(
             js_client,
             analysis_job_id,
             default_job_wait_timeout)
-        # Step 3.1: Validate job status. If job failed, stop processing and log error.
-        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_error_files_dir)
+        # Validate job status. If job failed, stop processing and log error.
+        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_output_dir)
         logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has finished. ")
 
 
@@ -382,7 +400,7 @@ def cmd_exec_download_results(current_dir, args, user_credentials, app_config):
     with Session(user_credentials.login, user_credentials.password, sso_service_base_url, proxies) as session:
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
-        # Step 4: Download results
+        # Download results
         logging.info(f"Downloading analysis results to the folder '{arg_output_dir}' has started.")
         destination_results_file_name = f"analysis_{arg_analysis_id}_results.zip"
         destination_results_file_path = os.path.join(arg_output_dir, destination_results_file_name)
