@@ -335,6 +335,7 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
 def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
     # Get/resolve arguments
     arg_analysis_id = args.analysis_id
+    arg_with_attr = args.with_attr
     arg_error_files_dir = get_arg(args, 'output_path', default=current_dir)
     arg_no_wait = get_arg(args, 'no_wait', default=False)
 
@@ -352,7 +353,7 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
         # Step 3.1: Schedule calculation job
-        analysis_job_id = ps_client.run_analysis(arg_analysis_id)
+        analysis_job_id = ps_client.run_analysis(arg_analysis_id, arg_with_attr)
         logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has started.")
 
         if arg_no_wait:
@@ -644,6 +645,12 @@ run_analysis_cmd_parser.add_argument(
     metavar='<analysis id>',
     required=True,
     help='The unique identifier of an analysis that is in ImpairmentStudio™')
+
+run_analysis_cmd_parser.add_argument(
+    '--with-attr',
+    metavar='<with attr>',
+    required=False,
+    help='Flag to determine if we will run calculation with attribution or not.™')
 
 run_analysis_cmd_parser.add_argument(
     '--output-path',
