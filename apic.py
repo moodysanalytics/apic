@@ -353,20 +353,25 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
         # Step 3.1: Schedule calculation job
-        analysis_job_id = ps_client.run_analysis(arg_analysis_id, arg_with_attr)
-        logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has started.")
-
-        if arg_no_wait:
+        analysis_job_id = ps_client.run_analysis(analysis_id=arg_analysis_id, with_attr=arg_with_attr)
+        logging.info(f"Analysis Allowance calculation (job id: '{analysis_job_id}') has started.")
+        job_to_wait_on = analysis_job_id
+        if arg_with_attr:
+            attr_analysis_job_id = js_client.get_job_by_analysis_id(arg_analysis_id)
+            # Step 3.2: Wait until calculation is done
+            logging.info(f"Analysis Attribution calculation (job id: '{attr_analysis_job_id}') has started.")
+            logging.info(f"Due to user input to run attribution, system will wait on the attribution job to complete.")
+            job_to_wait_on = attr_analysis_job_id
+        elif arg_no_wait:
             return
-
         # Step 3.2: Wait until calculation is done
         analysis_job_final_status = job_wait(
             js_client,
-            analysis_job_id,
+            job_to_wait_on,
             default_job_wait_timeout)
         # Step 3.1: Validate job status. If job failed, stop processing and log error.
-        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_error_files_dir)
-        logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has finished. ")
+        validate_job(job_to_wait_on, analysis_job_final_status, fms_client, arg_error_files_dir)
+        logging.info(f"Analysis calculation (job id: '{job_to_wait_on}') has finished. ")
 
 
 def cmd_exec_download_results(current_dir, args, user_credentials, app_config):
