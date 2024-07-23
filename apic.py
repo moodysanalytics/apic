@@ -353,9 +353,9 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
         # Step 3.1: Schedule calculation job
-        analysis_job_id = ps_client.run_analysis(analysis_id=arg_analysis_id, with_attr=arg_with_attr)
-        logging.info(f"Analysis Allowance calculation (job id: '{analysis_job_id}') has started.")
-        job_to_wait_on = analysis_job_id
+        allowance_job_id = ps_client.run_analysis(analysis_id=arg_analysis_id, with_attr=arg_with_attr)
+        logging.info(f"Analysis Allowance calculation (job id: '{allowance_job_id}') has started.")
+        job_to_wait_on = allowance_job_id
         if arg_with_attr:
             attr_analysis_job_id = js_client.get_job_by_analysis_id(arg_analysis_id)
             # Step 3.2: Wait until calculation is done
