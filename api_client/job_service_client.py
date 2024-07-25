@@ -25,16 +25,6 @@ class JobServiceClient(object):
         jobs_status = response.json()
         return jobs_status
 
-    def get_job_by_analysis_id(self, analysis_id):
-        url_path = f'/job/1.0/jobs/{analysis_id}?jobType=GenerateResultsJobApi&includeAttribution=true'
-        url = urllib.parse.urljoin(self.service_base_url, url_path)
-        response = requests.get(url, headers=self.session.get_auth_header(), proxies=self.session.proxies)
-        response.raise_for_status()
-
-        job_status = response.json()
-        attr_job_id = job_status['qualifier']
-        return attr_job_id
-
     def ping(self):
         url_path = "/job/docs/"
         url = urllib.parse.urljoin(self.service_base_url, url_path)
