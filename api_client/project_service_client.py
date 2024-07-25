@@ -17,8 +17,8 @@ class ProjectServiceClient(object):
         self.session = session
         self.service_base_url = service_base_url
 
-    def run_analysis(self, analysis_id, with_attr):
-        if with_attr is not None:
+    def run_analysis(self, analysis_id, with_attr = None):
+        if with_attr:
             url_path = f'/project/v1/analyses/{analysis_id}/jobs?withAttribution=true'
         else:
             url_path = f'/project/v1/analyses/{analysis_id}/jobs'

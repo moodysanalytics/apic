@@ -335,7 +335,6 @@ def cmd_exec_import(current_dir, args, user_credentials, app_config):
 def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
     # Get/resolve arguments
     arg_analysis_id = args.analysis_id
-    arg_with_attr = args.with_attr
     arg_error_files_dir = get_arg(args, 'output_path', default=current_dir)
     arg_no_wait = get_arg(args, 'no_wait', default=False)
 
@@ -353,25 +352,20 @@ def cmd_exec_analysis(current_dir, args, user_credentials, app_config):
         fms_client = FileManagementServiceClient(session, data_api_base_url)
 
         # Step 3.1: Schedule calculation job
-        allowance_job_id = ps_client.run_analysis(analysis_id=arg_analysis_id, with_attr=arg_with_attr)
-        logging.info(f"Analysis Allowance calculation (job id: '{allowance_job_id}') has started.")
-        job_to_wait_on = allowance_job_id
-        if arg_with_attr:
-            attr_analysis_job_id = js_client.get_job_by_analysis_id(arg_analysis_id)
-            # Step 3.2: Wait until calculation is done
-            logging.info(f"Analysis Attribution calculation (job id: '{attr_analysis_job_id}') has started.")
-            logging.info(f"Due to user input to run attribution, system will wait on the attribution job to complete.")
-            job_to_wait_on = attr_analysis_job_id
-        elif arg_no_wait:
+        analysis_job_id = ps_client.run_analysis(arg_analysis_id)
+        logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has started.")
+
+        if arg_no_wait:
             return
+
         # Step 3.2: Wait until calculation is done
         analysis_job_final_status = job_wait(
             js_client,
-            job_to_wait_on,
+            analysis_job_id,
             default_job_wait_timeout)
         # Step 3.1: Validate job status. If job failed, stop processing and log error.
-        validate_job(job_to_wait_on, analysis_job_final_status, fms_client, arg_error_files_dir)
-        logging.info(f"Analysis calculation (job id: '{job_to_wait_on}') has finished. ")
+        validate_job(analysis_job_id, analysis_job_final_status, fms_client, arg_error_files_dir)
+        logging.info(f"Analysis calculation (job id: '{analysis_job_id}') has finished. ")
 
 
 def cmd_exec_download_results(current_dir, args, user_credentials, app_config):
@@ -650,12 +644,6 @@ run_analysis_cmd_parser.add_argument(
     metavar='<analysis id>',
     required=True,
     help='The unique identifier of an analysis that is in ImpairmentStudio™')
-
-run_analysis_cmd_parser.add_argument(
-    '--with-attr',
-    metavar='<with attr>',
-    required=False,
-    help='Flag to determine if we will run calculation with attribution or not.™')
 
 run_analysis_cmd_parser.add_argument(
     '--output-path',
