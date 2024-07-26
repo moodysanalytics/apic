@@ -1,6 +1,6 @@
 __name__ = 'apic'
 __description__ = 'Moodys Analytics API client'
 __url__ = 'https://www.moodysanalytics.com'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __author__ = 'Moodys Analytics'
 __author_email__ = '@moodysanalytics.com'
