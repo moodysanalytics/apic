@@ -693,30 +693,43 @@ class ApicError(Exception):
 def main():
     app_path = sys.path[0]
 
-    # Because of new API selector option the help should be enforced implicitly for this use case
+    # Ensure that at least one argument (the API selector) is provided.
     if len(sys.argv) <= 1:
         arg_parser.print_help()
         exit(1)
 
-    # Check for API selector option 'is'
-    # Current implementation is supports just 'is' API (API to ImpairmentStudio)
-    api_selector_option = sys.argv[1]
-    if api_selector_option != 'is':
+    # Extract the API selector from the first command-line argument.
+    api_selector = sys.argv[1]
+
+    # Define a mapping of API selectors to their respective parser and executor.
+    # 'is' corresponds to ImpairmentStudio, and additional groups can be added here.
+    api_groups = {
+        'is': (arg_parser, execute_command),
+        # Example for future extension:
+        # 'other': (other_api_parser, execute_other_command),
+    }
+
+    # Check if the provided API selector is known.
+    if api_selector not in api_groups:
         arg_parser.print_help()
         exit(1)
 
-    # Get 'is' API options and parse them
-    is_args = sys.argv[2:]
-    commandline_args = arg_parser.parse_args(is_args)
+    # Retrieve the corresponding parser and executor for the selected API group.
+    selected_parser, selected_executor = api_groups[api_selector]
 
-    is_command_name = get_arg(commandline_args, 'is_command_name')
-    cmn_opt_test_connect = get_arg(commandline_args, 'test_connect')
-    cmn_opt_version = get_arg(commandline_args, 'version')
-    if not is_command_name and not cmn_opt_test_connect and not cmn_opt_version:
-        arg_parser.print_help()
+    # Parse the remaining command-line arguments after the API selector.
+    remaining_args = sys.argv[2:]
+    commandline_args = selected_parser.parse_args(remaining_args)
+
+    # Validate that at least one valid command or option has been provided.
+    if not (get_arg(commandline_args, 'is_command_name') or 
+            get_arg(commandline_args, 'test_connect') or 
+            get_arg(commandline_args, 'version')):
+        selected_parser.print_help()
         exit(1)
 
-    exit_code = execute_command(app_path, commandline_args)
+    # Execute the command and exit with the returned status code.
+    exit_code = selected_executor(app_path, commandline_args)
     exit(exit_code)
 
 
